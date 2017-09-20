@@ -37,4 +37,28 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   TODO:
     * Calculate a Jacobian here.
   */
+  MatrixXd H(3,4);
+  double const x(x_state(0)), y(x_state(1))
+            , vx(x_state(2)), vy(x_state(3));
+
+  double const xy_2(x*x + y*y);
+  if(fabs(xy_2) < 0.0001)
+  {
+    cout << "CalculateJacobian () - Error - Division by zero" << endl;
+    return H;
+  }
+  double const v1(vx*y-vy*x);
+  H(0,0) = x / sqrt(xy_2);
+  H(0,1) = y / sqrt(xy_2);
+  H(0,2) = 0.;
+  H(0,3) = 0.;
+  H(1,0) = -y / xy_2;
+  H(1,1) = x / xy_2;
+  H(1,2) = 0.;
+  H(1,3) = 0.;
+  H(2,0) = (y * v1)/ (sqrt(xy_2)*xy_2);
+  H(2,1) = (-x * v1)/ (sqrt(xy_2)*xy_2);
+  H(2,2) = x/sqrt(xy_2);
+  H(2,3) = y/sqrt(xy_2);
+  return H;
 }
