@@ -30,11 +30,6 @@ public:
   */
   MatrixXd CalculateJacobian(const VectorXd& x_state);
 
-  /**
-   * A helper to extract the measurement vector.
-   */
-
-
 };
 
 #endif /* TOOLS_H_ */

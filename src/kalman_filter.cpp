@@ -48,24 +48,24 @@ void KalmanFilter::Update(const VectorXd &z) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-  TODO:
-    * update the state by using Extended Kalman Filter equations
-  */
 
-  //sanity check
-  bool const avoidZeroDivision(fabs(sqrt(x_(0)*x_(0)+x_(1)*x_(1)))<0.0001);
 
   //translate predicted state x' into the measurement space
   double const pred_rho(sqrt(x_(0)*x_(0) + x_(1)*x_(1)));
   double const pred_phi(atan2(x_(1),x_(0)));
 
-  double const pred_rhodot(avoidZeroDivision?0.: (x_(0)*x_(2)+x_(1)*x_(3)) / sqrt(x_(0)*x_(0)+x_(1)*x_(1)));
+  //sanity check
+  bool const avoidZeroDivision(fabs(pred_rho)<0.0001);
+  double const pred_rhodot(avoidZeroDivision?0.: (x_(0)*x_(2)+x_(1)*x_(3)) / pred_rho);
+
+
+  //summarize the prediction vector
   VectorXd prediction(3);
   prediction << pred_rho, pred_phi, pred_rhodot;
 
   VectorXd y(z-prediction);
   const double pi(3.14159265);
+
   //adjust the range of phi
   y(1) = fmod(y(1),pi);
 
@@ -79,6 +79,5 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   //calculate the final state and covariance
   x_ = x_ + K * y;
   P_ = (MatrixXd::Identity(K.rows(),H_.cols()) - K*H_)*P_;
-
 
 }

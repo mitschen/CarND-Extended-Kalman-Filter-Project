@@ -25,17 +25,19 @@ FusionEKF::FusionEKF()
   //measurement covariance matrix - laser
   R_laser_ << 0.0225, 0,
               0     , 0.0225;
+  //measurement matrix for laser
+  //we consider only position measurement - no velocity given
+  H_laser_ << 1, 0, 0, 0,
+		      0, 1, 0, 0;
   //measurement covariance matrix - radar
   R_radar_ << 0.09, 0     , 0,
               0   , 0.0009, 0,
               0   , 0     , 0.09;
-
-  /**
-  TODO:
-    * Finish initializing the FusionEKF.
-    * Set the process and measurement noises
-  */
-
+  //measurement matrix for radar
+  //Please note: this matrix must be calculated each iteration using Jacobian
+  Hj_ << 0, 0, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0;
 
 }
 
@@ -52,12 +54,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
    ****************************************************************************/
 
   if (!is_initialized_) {
-    /**
-    TODO:
-      * Initialize the state ekf_.x_ with the first measurement.
-      * Create the covariance matrix.
-      * Remember: you'll need to convert radar from polar to cartesian coordinates.
-    */
     // first measurement
     cout << "EKF: " << endl;
     ekf_.x_ = VectorXd(4);
@@ -136,7 +132,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   double const noise_ax(9.);
   double const noise_ay(9.);
-  //calculate the process noise covariance matrix Q
+  //calculate the process noise covariance matrix Q (each timestep, noise
+  //		increases if timespan is longer)
   MatrixXd Q(4,4);
   Q << dt4/4*noise_ax, 0             , dt3/2*noise_ax, 0,
        0             , dt4/4*noise_ay, 0             , dt3/2*noise_ay,
@@ -166,7 +163,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
     // Radar updates
     //update the state transition matrix and the covariance
-    //use the prediction ekf_.x_ to calculate jabobian
+    //use the prediction ekf_.x_ to calculate jacobian
+    //Jacobian is making non-linearities linear again
     ekf_.H_ = tools.CalculateJacobian(ekf_.x_);
     ekf_.R_ = R_radar_;
     ekf_.UpdateEKF(measurement_pack.raw_measurements_);
