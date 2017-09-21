@@ -45,8 +45,6 @@ void KalmanFilter::Update(const VectorXd &z) {
   //calculate the final state and covariance
   x_ = x_ + K * y;
   P_ = (MatrixXd::Identity(K.rows(),H_.cols()) - K*H_)*P_;
-  std::cout << "new x_ = " << x_ << std::endl;
-  std::cout << "measured x_ = " << z << std::endl;
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
@@ -69,8 +67,6 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   VectorXd y(z-prediction);
   const double pi(3.14159265);
   //adjust the range of phi
-  double oldPhi(y(1));
-  double newPhi(fmod(oldPhi, pi));
   y(1) = fmod(y(1),pi);
 
   //do filter update
@@ -83,7 +79,6 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   //calculate the final state and covariance
   x_ = x_ + K * y;
   P_ = (MatrixXd::Identity(K.rows(),H_.cols()) - K*H_)*P_;
-  std::cout << "new x_ = " << x_ << std::endl;
 
 
 }
